@@ -5,6 +5,7 @@
 'use strict';
 
 import * as fs from 'fs';
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import { MappingItem as BaseMappingItem, RawSourceMap, SourceMapConsumer, SourceMapGenerator } from 'source-map';
 import * as ts from 'typescript';
@@ -348,6 +349,7 @@ class TextModel {
 function analyze(contents: string, relativeFilename: string, options: ts.CompilerOptions = {}): AnalysisResult {
 
 	const vscodeRegExp = /^\s*(["'])vscode-nls\1\s*$/;
+	const importFunction = "__importStar";
 
 	enum CollectStepResult {
 		Yes,
@@ -487,6 +489,10 @@ function analyze(contents: string, relativeFilename: string, options: ts.Compile
 	const nlsReferences = imports.reduce<ts.Node[]>((memo, node) => {
 		if (node.kind === ts.SyntaxKind.CallExpression) {
 			let parent = node.parent;
+			if (isCallExpression(parent) &&
+			    parent.getText() === importFunction) {
+				parent = parent.parent;
+			}
 			if (isVariableDeclaration(parent)) {
 				let references = service.getReferencesAtPosition(filename, parent.name.pos + 1);
 				references.forEach(reference => {
@@ -736,9 +742,14 @@ export function createLocalizedMessages(filename: string, bundle: ResolvedJavaSc
 	if (fs.existsSync(i18nFile)) {
 		let content = stripComments(fs.readFileSync(i18nFile, 'utf8'));
 		messages = JSON.parse(content);
-		if (Object.keys(messages).length === 0) {
+		if (Object.keys(messages).length !== bundleLength) {
 			if (bundleLength > 0) {
 				problems.push(`Message file ${i18nFile.substr(i18nBaseDir.length + 1)} is empty. Missing messages: ${bundleLength}`);
+			}
+			if (ResolvedJavaScriptMessageBundle.is(bundle)) {
+				bundle.map = Object.assign(bundle.map, messages);
+			} else {
+				bundle = Object.assign(map, messages);
 			}
 			messages = undefined;
 		}
