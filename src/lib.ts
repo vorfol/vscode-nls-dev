@@ -490,7 +490,7 @@ function analyze(contents: string, relativeFilename: string, options: ts.Compile
 		if (node.kind === ts.SyntaxKind.CallExpression) {
 			let parent = node.parent;
 			if (isCallExpression(parent) &&
-			    parent.getText() === importFunction) {
+			    parent.getText().startsWith(importFunction)) {
 				parent = parent.parent;
 			}
 			if (isVariableDeclaration(parent)) {
