@@ -765,9 +765,9 @@ export function createLocalizedMessages(filename: string, bundle: ResolvedJavaSc
 	if (messages === undefined) {
 		fse.ensureDirSync(path.dirname(i18nFile));
 		if (ResolvedJavaScriptMessageBundle.is(bundle)) {
-			fse.writeFileSync(i18nFile, bundle.map);
+			fse.writeFileSync(i18nFile, JSON.stringify(bundle.map, undefined, 4));
 		} else {
-			fse.writeFileSync(i18nFile, bundle);
+			fse.writeFileSync(i18nFile, JSON.stringify(bundle, undefined, 4));
 		}
 		problems.push(`Message file ${i18nFile.substr(i18nBaseDir.length + 1)} created.`);
 	}
