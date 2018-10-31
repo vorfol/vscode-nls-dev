@@ -31,12 +31,14 @@
     "@types/xml2js": "^0.4.2"
   },
   "dependencies": {
+    "@types/fs-extra": "^5.0.4",
     "clone": "^2.1.1",
     "event-stream": "^3.3.4",
+    "fs-extra": "^7.0.0",
     "glob": "^7.1.2",
+    "gulp-util": "^3.0.8",
     "iconv-lite": "^0.4.19",
     "is": "^3.2.1",
-    "gulp-util": "^3.0.8",
     "source-map": "^0.6.1",
     "typescript": "^2.6.2",
     "vinyl": "^2.1.0",

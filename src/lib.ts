@@ -744,19 +744,32 @@ export function createLocalizedMessages(filename: string, bundle: ResolvedJavaSc
 		messages = JSON.parse(content);
 		if (Object.keys(messages).length !== bundleLength) {
 			if (bundleLength > 0) {
-				problems.push(`Message file ${i18nFile.substr(i18nBaseDir.length + 1)} is empty. Missing messages: ${bundleLength}`);
+				problems.push(`Message file ${i18nFile.substr(i18nBaseDir.length + 1)} is inconsistent. ${Object.keys(messages).length} !== ${bundleLength}`);
 			}
 			if (ResolvedJavaScriptMessageBundle.is(bundle)) {
-				bundle.map = Object.assign(bundle.map, messages);
+				for (const key in bundle.map) {
+					if (messages[key] !== undefined) {
+						bundle.map[key] = messages[key];
+					}
+				}
 			} else {
-				bundle = Object.assign(map, messages);
+				for (const key in bundle) {
+					if (messages[key] !== undefined) {
+						bundle[key] = messages[key];
+					}
+				}
 			}
 			messages = undefined;
 		}
-	} else {
-		if (bundleLength > 0) {
-			problems.push(`Message file ${i18nFile.substr(i18nBaseDir.length + 1)} not found. Missing messages: ${bundleLength}`);
+	} 
+	if (messages === undefined) {
+		fse.ensureDirSync(path.dirname(i18nFile));
+		if (ResolvedJavaScriptMessageBundle.is(bundle)) {
+			fse.writeFileSync(i18nFile, bundle.map);
+		} else {
+			fse.writeFileSync(i18nFile, bundle);
 		}
+		problems.push(`Message file ${i18nFile.substr(i18nBaseDir.length + 1)} created.`);
 	}
 
 	let translatedMessages: string[] | Map<string>;
